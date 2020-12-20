@@ -1,25 +1,114 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from 'react'
+import Web3 from 'web3'
+import './App.css'
+import Modal from 'react-bootstrap/Modal'
 
-function App() {
-  return (
-    <div className="App">
+class App extends Component {
+
+  async loadBlockchainData(flag) {
+    if(window.ethereum){
+      const web3 = new Web3(window.ethereum);
+      try{
+        await window.ethereum.enable();
+        var accounts = await web3.eth.getAccounts();
+        var firstAcc = accounts[0];
+        var balance = await web3.eth.getBalance(firstAcc);
+        balance = parseFloat(balance);
+        this.setState({modalShow:!flag ,modalBalance:flag , balance:balance});
+      } catch(e){
+        console.error(e)
+      }
+    }
+  }
+
+  onClick() {
+    this.setState({modalShow:true});
+  }
+
+  showModal = (flag) => {
+    this.setState({modalShow:flag});
+  }
+
+  closeBalanceModal = () => {
+    this.setState({modalBalance:false});
+  }
+
+  showBalanceModal = (flag) => {
+    this.loadBlockchainData(flag);
+  }
+
+  checkBalance = () => {
+    this.closeBalanceModal();
+    this.setState({active: true});
+  }
+
+  constructor(props) {
+    super(props)
+    this.onClick = this.onClick.bind(this);
+    this.state = { account: '' , active:false , balance:0 , modalShow:false, modalBalance:false}
+
+  }
+
+  render() {
+    const active = this.state.active;
+    return (
+      <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+      <div>
+        {this.state.active}
+        { active ? (
+          <div>
+            <p>Your Account Balance:</p>
+            {this.state.balance > 0 ?(
+               <p>{this.state.balance}</p>
+            ):(
+              <p>No Balance in your account</p>
+            )}
+          </div>
+        ) : (
+          <button class="btn btn-primary" type="button" onClick={this.onClick}>
+            Connect
+          </button>
+        )}
+        <Modal
+          show={this.state.modalShow}
+          size="md"
+          aria-labelledby="contained-modal-title-vcenter"
+          centered
         >
-          Learn React
-        </a>
+          <Modal.Body>
+            <h5>
+              Do you want to connect with MetaMask ?
+            </h5>
+          </Modal.Body>
+          <Modal.Footer>
+            <button class="btn btn-secondary" onClick={() => this.showModal(false)}>Close</button>
+            <button class="btn btn-primary" onClick={() => this.showBalanceModal(true)}>Connect</button>
+          </Modal.Footer>
+        </Modal>
+
+          <Modal
+            show={this.state.modalBalance}
+            size="md"
+            aria-labelledby="contained-modal-title-vcenter"
+            centered
+          >
+          <Modal.Body>
+            <h5>
+              Check your balance ?
+            </h5>
+          </Modal.Body>
+          <Modal.Footer>
+            <button class="btn btn-secondary" onClick={() => this.closeBalanceModal(false)}>Close</button>
+            <button class="btn btn-primary" onClick={() => this.checkBalance()}>Check Balance</button>
+          </Modal.Footer>
+        </Modal>
+
+      </div>
       </header>
-    </div>
-  );
+      </div>
+    );
+  }
 }
 
 export default App;
