@@ -6,18 +6,23 @@ import Modal from 'react-bootstrap/Modal'
 class App extends Component {
 
   async loadBlockchainData(flag) {
-    if(window.ethereum){
-      const web3 = new Web3(window.ethereum);
-      try{
-        await window.ethereum.enable();
-        var accounts = await web3.eth.getAccounts();
-        var firstAcc = accounts[0];
-        var balance = await web3.eth.getBalance(firstAcc);
-        balance = parseFloat(balance);
-        this.setState({modalShow:!flag ,modalBalance:flag , balance:balance});
-      } catch(e){
-        console.error(e)
+    if(window.web3 !== undefined){
+      if(window.ethereum){
+        const web3 = new Web3(window.ethereum);
+        try{
+          await window.ethereum.enable();
+          var accounts = await web3.eth.getAccounts();
+          var firstAcc = accounts[0];
+          var balance = await web3.eth.getBalance(firstAcc);
+          balance =  web3.utils.fromWei(balance, "ether") + " ETH";
+          this.setState({modalShow:!flag ,modalBalance:flag , balance:balance});
+        } catch(e){
+          console.error(e)
+        }
       }
+    } else {
+      this.showModal(false);
+      alert('No metmask installed');
     }
   }
 
@@ -46,7 +51,6 @@ class App extends Component {
     super(props)
     this.onClick = this.onClick.bind(this);
     this.state = { account: '' , active:false , balance:0 , modalShow:false, modalBalance:false}
-
   }
 
   render() {
@@ -55,18 +59,13 @@ class App extends Component {
       <div className="App">
       <header className="App-header">
       <div>
-        {this.state.active}
         { active ? (
           <div>
             <p>Your Account Balance:</p>
-            {this.state.balance > 0 ?(
-               <p>{this.state.balance}</p>
-            ):(
-              <p>No Balance in your account</p>
-            )}
+            <p>{this.state.balance}</p>
           </div>
         ) : (
-          <button class="btn btn-primary" type="button" onClick={this.onClick}>
+          <button className="btn btn-primary" type="button" onClick={this.onClick}>
             Connect
           </button>
         )}
@@ -82,8 +81,8 @@ class App extends Component {
             </h5>
           </Modal.Body>
           <Modal.Footer>
-            <button class="btn btn-secondary" onClick={() => this.showModal(false)}>Close</button>
-            <button class="btn btn-primary" onClick={() => this.showBalanceModal(true)}>Connect</button>
+            <button className="btn btn-secondary" onClick={() => this.showModal(false)}>Close</button>
+            <button className="btn btn-primary" onClick={() => this.showBalanceModal(true)}>Connect</button>
           </Modal.Footer>
         </Modal>
 
@@ -99,8 +98,8 @@ class App extends Component {
             </h5>
           </Modal.Body>
           <Modal.Footer>
-            <button class="btn btn-secondary" onClick={() => this.closeBalanceModal(false)}>Close</button>
-            <button class="btn btn-primary" onClick={() => this.checkBalance()}>Check Balance</button>
+            <button className="btn btn-secondary" onClick={() => this.closeBalanceModal(false)}>Close</button>
+            <button className="btn btn-primary" onClick={() => this.checkBalance()}>Check Balance</button>
           </Modal.Footer>
         </Modal>
 
